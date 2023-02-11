@@ -1,7 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { Button, StyleSheet, Text, TextInput, View } from 'react-native';
-import { app, ref, getDatabase, set } from './config/firebase';
+import app from './config/firebase';
+import { getDatabase, ref, set } from './config/database';
+import { auth, createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged } from './config/auth';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function App() {
@@ -14,51 +16,93 @@ export default function App() {
   const [password, setPassword] = useState(null);
   const [confirPassword, setConfirmPassword] = useState(null);
 
+  const create = (email, password) => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in 
+        setUser(userCredential.user);
+        console.log(userCredential);
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        // ..
+      });
+  }
+
+  const login = (email,password)=>{
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in 
+        setUser(userCredential.user);
+        console.log(userCredential);
+        // ...
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
+  }
+
+  const sessionState = ()=>{
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const uid = user.uid;
+        console.log(uid);
+        // ...
+      } else {
+        alert("Session expired");
+      }
+    });
+  }
 
   function writeUserData(document, userId, user, email, firstName, lastName, password) {
     const dbCurso = getDatabase();
-    try{
-    set(ref(dbCurso, document + '/' + userId), {
-      username: user,
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      password: password,
-    });
-    alert("Se registro de forma correcta");
-    }catch(e){
+    try {
+      set(ref(dbCurso, document + '/' + userId), {
+        username: user,
+        email: email,
+        firstName: firstName,
+        lastName: lastName,
+        password: password,
+      });
+      alert("Se registro de forma correcta");
+    } catch (e) {
       console.log(e);
     }
   }
 
   const prueba = () => {
     let cont = true;
-    if ((user === null || user === "") && cont===true) {
+    if ((user === null || user === "") && cont === true) {
       alert("user es requerido");
       cont = false;
     }
-    if ((email === null || email === "" ) && cont===true) {
+    if ((email === null || email === "") && cont === true) {
       alert("Email es requerido");
       cont = false;
     }
-    if ((firstName === null || firstName === "") && cont===true) {
+    if ((firstName === null || firstName === "") && cont === true) {
       alert("First Name es requerido");
       cont = false;
     }
-    if ((lastName === null || lastName === "") && cont===true) {
+    if ((lastName === null || lastName === "") && cont === true) {
       alert("Last Name es requerido");
       cont = false;
     }
-    if ((password === null || password === "") && cont===true) {
+    if ((password === null || password === "") && cont === true) {
       alert("Password es requerido");
       cont = false;
     }
     if (email === confirmEmail) {
-      if(password === confirPassword){
-      let myuuid = uuidv4();
-      console.log(myuuid);
-      writeUserData("users", myuuid, user, email, firstName, lastName, password);
-      }else{
+      if (password === confirPassword) {
+        let myuuid = uuidv4();
+        console.log(myuuid);
+        writeUserData("users", myuuid, user, email, firstName, lastName, password);
+        create(email, password);
+        login(email, password);
+      } else {
         alert("Las contraseñas no coiciden");
       }
     } else {
@@ -101,7 +145,7 @@ export default function App() {
       </View>
       <View style={styles.ButtonContainer}>
         <Button style={styles.button} onPress={prueba} title="Send" />
-        <Button style={styles.button} onPress={prueba} title="Limpiar" />
+        <Button style={styles.button} onPress={sessionState} title="Valida session" />
       </View>
       <StatusBar style="auto" />
     </View>

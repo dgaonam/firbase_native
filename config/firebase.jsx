@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getDatabase,ref,set } from "firebase/database";
+
 //import { getAnalytics } from "firebase/analytics";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -15,6 +15,7 @@ const firebaseConfig = {
   messagingSenderId: "143594891060",
   appId: "1:143594891060:web:2d7531aa1a4a3fc64e6761",
   measurementId: "G-X3WK084BT4",
+
   databaseURL: "https://curso-f876a-default-rtdb.firebaseio.com/",
 };
 
@@ -22,4 +23,4 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 //const analytics = getAnalytics(app);
 
-export { app, getDatabase, ref,set };
+export default app;
